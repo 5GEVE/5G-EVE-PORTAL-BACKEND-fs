@@ -1,0 +1,9 @@
+.vscode/
+*env/
+*/app/__pycache__/*
+*.pyc
+/old
+bugzilla_service/venv/
+rbac/venv/
+uploaded_files/
+*.img
