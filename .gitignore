@@ -7,3 +7,4 @@ bugzilla_service/venv/
 rbac/venv/
 uploaded_files/
 *.img
+./fs_flask/uploads

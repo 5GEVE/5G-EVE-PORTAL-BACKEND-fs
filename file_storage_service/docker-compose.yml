@@ -1,0 +1,19 @@
+version: "3.3"
+
+volumes:
+  fsData: {}
+  
+services:
+
+  storageservicedb:
+    build: "./db"
+    restart: "always"
+    container_name: "storageservicedb"
+    environment:
+      POSTGRES_DB: "fsdb"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    ports:
+    - "5861:5432"
+    volumes:
+      - fsData:/var/lib/postgresql/data
