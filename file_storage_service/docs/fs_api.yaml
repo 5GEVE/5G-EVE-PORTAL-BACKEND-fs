@@ -1,0 +1,300 @@
+openapi: 3.0.1
+info:
+  title: 5G-EVE FS module
+  description: FS module for 5G-EVE portal
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: gigarcia@it.uc3m.es
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.0.1
+servers:
+- url: https://www.5g-eve.eu/portal/fs
+- url: http://www.5g-eve.eu/portal/fs
+paths:
+  /:
+    get:
+      tags:
+      - Files Storage
+      description: Retrieves files assotiated to a user. If user has SiteManager role,
+        he/she will retrieve all available files to be uploaded to their corresponding
+        sites. It will return all files uploaded by the logged in user otherwise
+      operationId: getFS
+      responses:
+        200:
+          description: Request accepted
+          content:
+            application/json:
+              example:
+                files:
+                  france_nice:
+                  - created_at: Tue, 26 May 2020 10:40:38 GMT
+                    creator: exp_dev@mail.com
+                    filename: filenametest
+                    status: PENDING
+                    updated_at: Tue, 26 May 2020 10:40:38 GMT
+                  - created_at: Tue, 26 May 2020 10:44:32 GMT
+                    creator: exp_dev@mail.com
+                    filename: filenametest2
+                    status: PENDING
+                    updated_at: Tue, 26 May 2020 10:44:32 GMT
+                  france_rennes: []
+                  frante_paris: []
+                  greece_athens: []
+                  italy_turin: []
+                  spain_5tonic:
+                  - created_at: Tue, 26 May 2020 09:36:47 GMT
+                    creator: exp_dev@mail.com
+                    filename: filenametest3
+                    status: PENDING
+                    updated_at: Tue, 26 May 2020 09:36:47 GMT
+        400:
+          description: Bad request (i.e. no authorization header)
+          content:
+            application/json:
+              example:
+                details: "Error details"
+        401:
+          description: The provided token is invalid
+          content:
+            application/json:
+              example:
+                details: "Error details"
+      security:
+      - api_key: []
+      
+  /upload/{filename}:
+    post:
+      tags:
+      - Files Storage
+      description: Method to upload a file. File must be provided as form-data parameter
+      operationId: uploadFile
+      parameters:
+      - name: filename
+        in: path
+        description: name of the file to be uploaded
+        required: true
+        schema: {}
+      responses:
+        201:
+          description: ""
+          content:
+            application/json:
+              example:
+                details: "File succesfully uploaded"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              example:
+                details: "Error details"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                details: "Error details"
+      security:
+      - api_key: []
+
+  /sites/{filename}:
+    post:
+      tags:
+      - Files Storage
+      description: Method to link uploaded files with sites where they should be deployed
+      operationId: setSites
+      parameters:
+      - name: filename
+        in: path
+        description: name of the file at which we want to link deployment sites
+        required: true
+        schema: {}
+        
+      requestBody:
+        description: list of sites
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/setSites'
+              
+      responses:
+        200:
+          description: ""
+          content:
+            application/json:
+              example:
+                details: 
+                  - deployment_requested_on: ["site1", "site2"]
+        400:
+          description: Bad request
+          content:
+            application/json:
+              example:
+                details: "Error details"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                details: "Error details"
+      security:
+      - api_key: []
+
+  /status/{filename}:
+    post:
+      tags:
+      - Files Storage
+      description: Method to modify the status on an uploaded file
+      operationId: setFileStatus
+      parameters:
+      - name: filename
+        in: path
+        description: name of the file to be updated
+        required: true
+        schema: {}
+        
+      requestBody:
+        description: list of sites
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/setStatus'
+              
+      responses:
+        200:
+          description: ""
+          content:
+            application/json:
+              example:
+                details: "<filename>-<site> status updated to <new_status>"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              example:
+                details: "Error details"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                details: "Error details"
+      security:
+      - api_key: []
+      
+  /download/{filename}:
+    get:
+      tags:
+      - Files Storage
+      description: Method to download an available file
+      operationId: downloadFile
+      parameters:
+      - name: filename
+        in: path
+        description: name of the file to be updated
+        required: true
+        schema: {}
+              
+      responses:
+        200:
+          description: ""
+
+        400:
+          description: Bad request
+          content:
+            application/json:
+              example:
+                details: "Error details"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                details: "Error details"
+      security:
+      - api_key: []      
+
+  /delete/{filename}:
+    post:
+      tags:
+      - Files Storage
+      description: Method to delete a specific uploaded file
+      operationId: deleteFile
+      parameters:
+      - name: filename
+        in: path
+        description: name of the file to be deleted
+        required: true
+        schema: {}
+        
+      requestBody:
+        description: list of sites
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deleteFile'
+              
+      responses:
+        200:
+          description: ""
+          content:
+            application/json:
+              example:
+                details: "file <filename> correctly removed"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              example:
+                details: "Error details"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                details: "Error details"
+      security:
+      - api_key: []
+      
+components:
+  schemas:
+    setSites:
+      required: 
+      - sites
+      type: object
+      properties:
+        sites:
+          type: array
+          description: ""
+          items:
+            type: string 
+    setStatus:
+      required: 
+      - site
+      - status
+      type: object
+      properties:
+        site:
+          type: string
+          description: "site assotiated to the file"
+        status:
+          type: string
+          description: "new status of the file (PENDING/READY)"
+    deleteFile:
+      required: 
+      - site
+      type: object
+      properties:
+        site:
+          type: string
+          description: "site assotiated to the file to be removed"
+  
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: Bearer
+      in: header
