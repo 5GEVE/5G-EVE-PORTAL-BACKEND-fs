@@ -17,3 +17,13 @@ services:
     - "5861:5432"
     volumes:
       - fsData:/var/lib/postgresql/data
+  fsservice:
+    build: "./fs_flask"
+    restart: "always"
+    container_name: "fsService"
+    ports:
+    - "9191:9191"
+    volumes:
+      - /home/ubuntu/storage/files_service:/storage
+    depends_on:
+      - storageservicedb      

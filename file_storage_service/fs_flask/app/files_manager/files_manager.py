@@ -162,7 +162,6 @@ class FilesManager:
 
                 f2s = FileToSiteData.query.filter_by(site_id=site_data._id, file_id=file_data._id).first()
                 if not f2s:
-                    #f2s_data = {"file_id": file_data._id, "site_id": site_data._id}
                     f2s_data = {"file_id": file_data._id, "site_id": site_data._id, "_status": "PENDING"}
                     new_f2s_data = f2s_schema.load(f2s_data)
                     db.session.add(new_f2s_data)
@@ -170,8 +169,6 @@ class FilesManager:
 
                     # Create a ticket if file correctly uploaded
                     if site in site_managers.keys() and len(site_managers[site]) > 0:
-                        #print(site_managers[site])
-                        #TODO: check len site_managers[site][0]
                         bz_trusted_url = "{}{}".format(current_app.config['BZ_SERVICE_URL'], "portal/tsb/tickets/trusted")
                         bz_trusted_data = {
                             'reporter': token_data['email'], 

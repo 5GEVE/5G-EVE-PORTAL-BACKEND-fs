@@ -11,10 +11,7 @@ def configure(mode, app):
         app.config['SECRET_KEY'] = 'you-will-never-guess'
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
         app.config['CORS_HEADERS'] = 'Content-Type'
-        app.config['UPLOAD_FOLDER'] = '{}/../uploads'.format(basedir)
         app.config['CHUNK_SIZE'] = 4096
-
-    print(app.config['UPLOAD_FOLDER'])
 
     # Create keycloak configuration file
     with open(os.path.abspath(os.path.dirname(__file__))+'/../app/flask_config.json', 'r') as config_file:
@@ -24,7 +21,7 @@ def configure(mode, app):
 
     # App configuration from config file
     app.config['RBAC_MANAGED_SITES_URL'] = conf['rbac_managed_sites_url']
-    #app.config['UPLOAD_FOLDER'] = '{}/../uploads'.format(basedir)
+    app.config['UPLOAD_FOLDER'] = '/storage'
     app.config['BZ_SERVICE_URL'] = conf['bz_service_url']
     app.config['BZ_SERVICE_PROD'] = conf['bz_service_product']
     app.config['BZ_SERVICE_COMP'] = conf['bz_service_component']
@@ -49,8 +46,6 @@ def configure(mode, app):
     kc_config['web']['admin_users_uri'] = "{}{}".format(conf['kc_url'], conf['admin_users_uri'])
     kc_config['web']['admin_groups_uri'] = "{}{}".format(conf['kc_url'], conf['admin_groups_uri'])
     kc_config['web']['admin_roles_uri'] = "{}{}".format(conf['kc_url'], conf['admin_roles_uri'])
-
-    #print(os.path.abspath(os.path.dirname(__file__))+'/../app/keycloak/keycloak.json')
 
     with open(os.path.abspath(os.path.dirname(__file__))+'/../app/keycloak/keycloak.json',"w+") as f:
         json.dump(kc_config, f)

@@ -12,12 +12,12 @@ WORKDIR /
 COPY ./requirements.txt /requirements.txt
 RUN pip3 install -r requirements.txt
 
-RUN mkdir authservice_flask
+RUN mkdir fs_flask
+RUN mkdir -p /storage/files_storage
 
-ADD ./app /authservice_flask/app
-ADD ./auth_app.py /authservice_flask
-#ADD ./keycloak.json /authservice_flask/app/keycloak
+ADD ./app /fs_flask/app
+ADD ./fs_app.py /fs_flask
 
-WORKDIR /authservice_flask
+WORKDIR /fs_flask
 
-CMD [ "python3", "auth_app.py" ]
+CMD [ "python3", "fs_app.py" ]

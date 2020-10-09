@@ -27,9 +27,11 @@ def get_files(token_data):
     if "SiteManager" in token_data['roles']:
         data, status = fs_manager.get_files_to_deploy(token_data)
         return data, status
-    else:
+    elif "VnfDeveloper" in token_data['roles']:
         data, status = fs_manager.get_uploaded_files(token_data)
         return data, status
+    else:
+        return jsonify({"details": "Unauthorized"}), 401
 
 ''' 
 Saves single file uploaded from request.form 
@@ -45,50 +47,59 @@ Saves single file uploaded from request.form
 @token_required
 def upload(token_data, filename=None):
 
-    if "Content-Length" not in request.headers:
-        return jsonify({"details":"Content-Length not in headers"}), 400
+    if "VnfDeveloper" in token_data['roles']:
+        if "Content-Length" not in request.headers:
+            return jsonify({"details":"Content-Length not in headers"}), 400
 
-    if filename is None or filename=='':
-        return jsonify({"details":"Filename not provided"}), 400            
+        if filename is None or filename == '':
+            return jsonify({"details":"Filename not provided"}), 400            
 
-    data, status = fs_manager.upload_file(token_data, filename, request)
-    return data, status
+        data, status = fs_manager.upload_file(token_data, filename, request)
+        return data, status
+    else:
+        return jsonify({"details": "Unauthorized"}), 401
 
 @bp.route('/sites/<filename>', methods=['POST'])
 @token_required
 def set_sites(token_data, filename=None):
-    if not request.is_json:
-        return jsonify({"details": "No json provided"}), 400
+    if "VnfDeveloper" in token_data['roles']:
+        if not request.is_json:
+            return jsonify({"details": "No json provided"}), 400
 
-    try:
-        data = request.get_json()
-    except Exception as e:
-        return jsonify({"details": "Provided JSON not correctly formatted"}), 400
+        try:
+            data = request.get_json()
+        except Exception as e:
+            return jsonify({"details": "Provided JSON not correctly formatted"}), 400
 
-    if 'sites' not in data.keys():
-        return jsonify({"details":"No sites provided"}), 400
-    
-    site_managers, status_code = kc_client.get_site_manager_users()
+        if 'sites' not in data.keys():
+            return jsonify({"details":"No sites provided"}), 400
+        
+        site_managers, status_code = kc_client.get_site_manager_users()
 
-    if status_code == requests.codes.ok:
-        sm_map = {}
-        for site in data['sites']:
-            sm_map[site] = []
-            for sm in site_managers:
-                if 'attributes' in sm.keys():
-                    if 'managed_sites' in sm['attributes'].keys():
-                        if site in sm['attributes']['managed_sites']:
-                            sm_map[site].append(sm['email'])
-                            
-        data, status = fs_manager.set_uploaded_file_sites(token_data, filename, data['sites'], sm_map, request)
-        return data, status
+        if status_code == requests.codes.ok:
+            sm_map = {}
+            for site in data['sites']:
+                sm_map[site] = []
+                for sm in site_managers:
+                    if 'attributes' in sm.keys():
+                        if 'managed_sites' in sm['attributes'].keys():
+                            if site in sm['attributes']['managed_sites']:
+                                sm_map[site].append(sm['email'])
+                                
+            data, status = fs_manager.set_uploaded_file_sites(token_data, filename, data['sites'], sm_map, request)
+            return data, status
 
+        else:
+            return jsonify({"details": site_managers}), status_code
     else:
-        return jsonify({"details": site_managers}), status_code
+        return jsonify({"details": "Unauthorized"}), 401
 
 @bp.route('/status/<filename>', methods=['POST'])
 @token_required
 def set_file_status(token_data, filename=None):
+
+    if not "SiteManager" in token_data['roles']:
+        return jsonify({"details": "Unauthorized"}), 401
 
     if not request.is_json:
         return jsonify({"details": "No json provided"}), 400
@@ -103,9 +114,6 @@ def set_file_status(token_data, filename=None):
 
     if data['status'] not in ['PENDING', 'READY']:
         return jsonify({"details":"Status not supported. Only PENDING or READY can be used."}), 400
-
-    if not "SiteManager" in token_data['roles']:
-        return jsonify({"details": "Unauthorized"}), 401
 
     data, status = fs_manager.set_file_status(token_data, filename, data['site'], data['status'])
 
@@ -123,8 +131,11 @@ def download(token_data, filename=None):
         file_to_download = FileData.query.filter_by(filename=filename).first()
         user_folder_name = "{}/".format(str(file_to_download.creator).split('@')[0])
 
-    else:
+    elif "VnfDeveloper" in token_data['roles']:
         user_folder_name = "{}/".format(str(token_data['email']).split('@')[0])
+
+    else:
+        return jsonify({"details": "Unauthorized"}), 401
 
     folder_path = os.path.join(os.path.join(current_app.config['UPLOAD_FOLDER'], user_folder_name))
     file_full_path = os.path.join(os.path.join(folder_path, filename))
@@ -156,8 +167,11 @@ def delete(token_data, filename=None):
         file_to_download = FileData.query.filter_by(filename=filename).first()
         user_folder_name = "{}/".format(str(file_to_download.creator).split('@')[0])
 
-    else:
+    elif "VnfDeveloper" in token_data['roles']:
         user_folder_name = "{}/".format(str(token_data['email']).split('@')[0])
+    
+    else:
+        return jsonify({"details": "Unauthorized"}), 401
 
     folder_path = os.path.join(os.path.join(current_app.config['UPLOAD_FOLDER'], user_folder_name))
     file_full_path = os.path.join(os.path.join(folder_path, filename))
