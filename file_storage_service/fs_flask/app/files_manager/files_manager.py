@@ -89,6 +89,13 @@ class FilesManager:
         else:
             return reply.json(), reply.status_code
 
+    """ 
+        Method to receive the uploaded file by chunks
+            @params:
+                - token_data: user information extracted from the token
+                - filename: name of the file to be uploaded
+                - request: request from which we will "extract" the chunks of the file
+    """
     def upload_file(self, token_data, filename, request):
 
         folder_path = self.get_folder_path(token_data)
@@ -113,13 +120,12 @@ class FilesManager:
                     else:
                         f.write(chunk)
                         f.flush()
-                        #print("wrote chunk of {}".format(len(chunk)))
+
         except OSError as e:
             print("[ERROR] cannot write file " + filename + " to disk: " + StringIO(str(e)).getvalue())
             return jsonify({"details":"Error writing file to disk"}), 500
 
         schema = FileDataSchema()
-        #data = {"filename": filename, "creator": token_data['email'], "file_status": "PENDING"}
         data = {"filename": filename, "creator": token_data['email']}
         errors = schema.validate(data)
         
@@ -134,6 +140,15 @@ class FilesManager:
 
         return jsonify({"details":"File succesfully uploaded"}), 201
 
+    """ 
+        Method to assign sites to the uploaded files
+            @params:
+                - token_data: user information extracted from the token
+                - filename: name of the file to be uploaded
+                - sites: sites to be assigned
+                - site_managers: list of site managers that manages these sites
+                - request: main request
+    """
     def set_uploaded_file_sites(self, token_data, filename, sites, site_managers, request):
         folder_path = self.get_folder_path(token_data)
 
@@ -188,6 +203,14 @@ class FilesManager:
 
         return jsonify({"details": {"deployment_requested_on": requested_sites_to_deploy}}), 200
 
+    """ 
+        Method to update the status of a file
+            @params:
+                - token_data: user information extracted from the token
+                - filename: name of the file to be uploaded
+                - site: site at which the file status has changed
+                - status: new status of the file
+    """
     def set_file_status(self, token_data, filename, site, status):
         file_to_download = FileData.query.filter_by(filename=filename).first()
         user_folder_name = "{}/".format(str(file_to_download.creator).split('@')[0])
@@ -212,11 +235,16 @@ class FilesManager:
 
         f2s_data._status = status
         db.session.commit()
-        
-        #TODO: create a comment with the new status of the uploaded file
 
         return jsonify({"details": "{}-{} status updated to {}".format(filename, site, status)}), 200
 
+    """ 
+        Method to remove a file
+            @params:
+                - file_full_path: Path where the file is stored
+                - filename: name of the file
+                - sitename: site where the file is supposed to be deployed
+    """
     def delete_file(self, file_full_path, filename, sitename):
         file_to_remove = FileData.query.filter_by(filename=filename).first()
 

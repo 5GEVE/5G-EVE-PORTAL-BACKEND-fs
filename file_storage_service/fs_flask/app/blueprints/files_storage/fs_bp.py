@@ -59,6 +59,13 @@ def upload(token_data, filename=None):
     else:
         return jsonify({"details": "Unauthorized"}), 401
 
+'''
+Assignation of sites for a specific file
+        @url_params: 
+            - filename: name of the file
+        @json_params:
+            - sites: sites where the specified file must be deployed
+'''
 @bp.route('/sites/<filename>', methods=['POST'])
 @token_required
 def set_sites(token_data, filename=None):
@@ -71,9 +78,10 @@ def set_sites(token_data, filename=None):
         except Exception as e:
             return jsonify({"details": "Provided JSON not correctly formatted"}), 400
 
-        if 'sites' not in data.keys():
+        if "sites" not in data.keys():
             return jsonify({"details":"No sites provided"}), 400
-        
+
+        # Retrieve list of site managers for the specific sites        
         site_managers, status_code = kc_client.get_site_manager_users()
 
         if status_code == requests.codes.ok:
@@ -81,11 +89,12 @@ def set_sites(token_data, filename=None):
             for site in data['sites']:
                 sm_map[site] = []
                 for sm in site_managers:
-                    if 'attributes' in sm.keys():
-                        if 'managed_sites' in sm['attributes'].keys():
+                    if "attributes" in sm.keys():
+                        if "managed_sites" in sm['attributes'].keys():
                             if site in sm['attributes']['managed_sites']:
                                 sm_map[site].append(sm['email'])
-                                
+            
+            # Store information about the site where the uploaded file must be deployed
             data, status = fs_manager.set_uploaded_file_sites(token_data, filename, data['sites'], sm_map, request)
             return data, status
 
@@ -94,6 +103,14 @@ def set_sites(token_data, filename=None):
     else:
         return jsonify({"details": "Unauthorized"}), 401
 
+'''
+Updates the status of an uploaded file
+        @url_params: 
+            - filename: name of the file
+        @json_params:
+            - status: new status to be assigned
+            - site: site name at which the file will be deployed
+'''
 @bp.route('/status/<filename>', methods=['POST'])
 @token_required
 def set_file_status(token_data, filename=None):
@@ -109,7 +126,7 @@ def set_file_status(token_data, filename=None):
     except Exception as e:
         return jsonify({"details": "Provided JSON not correctly formatted"}), 400
 
-    if 'status' not in data.keys() or 'site' not in data.keys():
+    if "status" not in data.keys() or "site" not in data.keys():
         return jsonify({"details":"No sites provided"}), 400
 
     if data['status'] not in ['PENDING', 'READY']:
@@ -119,7 +136,11 @@ def set_file_status(token_data, filename=None):
 
     return data, status
 
-
+'''
+Downloads a specific file
+        @url_params: 
+            - filename: name of the file
+'''
 @bp.route('/download/<filename>', methods=['GET'])
 @token_required
 def download(token_data, filename=None):
@@ -145,6 +166,14 @@ def download(token_data, filename=None):
 
     return send_from_directory(folder_path, filename)
 
+'''
+Method to remove a file. Only the owner of the file will completely remove the file
+from the system.
+        @url_params: 
+            - filename: name of the file
+        @json_params:
+            - site: site name at which the file will be deployed            
+'''
 @bp.route('/delete/<filename>', methods=['POST'])
 @token_required
 def delete(token_data, filename=None):
@@ -160,7 +189,7 @@ def delete(token_data, filename=None):
     except Exception as e:
         return jsonify({"details": "Provided JSON not correctly formatted"}), 400
 
-    if 'site' not in data.keys():
+    if "site" not in data.keys():
         return jsonify({"details":"No site provided"}), 400
 
     if "SiteManager" in token_data['roles']:
@@ -183,6 +212,9 @@ def delete(token_data, filename=None):
 
     return jsonify({"details": "file {} correctly removed".format(filename)}), 200
 
+'''
+Retrieves all the available site facilities where to deploy VNFs           
+'''
 @bp.route('/site-facilities', methods=['GET'])
 @token_required
 def get_site_facilities(token_data):

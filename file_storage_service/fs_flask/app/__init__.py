@@ -32,9 +32,6 @@ def create_app(test_config=None):
         db.init_app(app)
         db.create_all()
 
-        # flask-bcrypt
-        #bcrypt.init_app(app)
-
         app.register_blueprint(fs_bp)
 
         return app
