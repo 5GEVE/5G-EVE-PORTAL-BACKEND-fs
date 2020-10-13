@@ -1,6 +1,6 @@
 from flask import ( Blueprint, jsonify, request)
 from flask import current_app, send_from_directory
-import os, app, requests, json
+import os, app, requests, json, sys
 from app import db
 
 from werkzeug.utils import secure_filename
@@ -69,6 +69,7 @@ Assignation of sites for a specific file
 @bp.route('/sites/<filename>', methods=['POST'])
 @token_required
 def set_sites(token_data, filename=None):
+
     if "VnfDeveloper" in token_data['roles']:
         if not request.is_json:
             return jsonify({"details": "No json provided"}), 400
@@ -99,6 +100,7 @@ def set_sites(token_data, filename=None):
             return data, status
 
         else:
+            print('Error retrieving list of site managers', file=sys.stderr)
             return jsonify({"details": site_managers}), status_code
     else:
         return jsonify({"details": "Unauthorized"}), 401

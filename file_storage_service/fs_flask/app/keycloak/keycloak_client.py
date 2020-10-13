@@ -1,5 +1,5 @@
 
-import requests, os, json
+import requests, os, json, sys
 from requests.auth import HTTPBasicAuth
 from flask import ( jsonify )
 
@@ -83,7 +83,6 @@ class KeycloakClient:
             self.refresh_admin_token()
             headers = {'Authorization': 'Bearer {}'.format(self.admin_access_token), 'Content-Type': 'application/json'}
 
-        #url = "http://10.5.7.11:8080/auth/admin/realms/5geve/roles/SiteManager/users"
         url = "{}/SiteManager/users".format(self.client_config['web']['admin_roles_uri'])
         response = requests.get(url, headers=headers)
 

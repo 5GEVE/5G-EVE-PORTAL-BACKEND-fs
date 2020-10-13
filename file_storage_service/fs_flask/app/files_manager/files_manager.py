@@ -150,6 +150,7 @@ class FilesManager:
                 - request: main request
     """
     def set_uploaded_file_sites(self, token_data, filename, sites, site_managers, request):
+        
         folder_path = self.get_folder_path(token_data)
 
         file_full_path = os.path.join(os.path.join(folder_path, filename))
@@ -166,7 +167,7 @@ class FilesManager:
 
         sd_schema = SiteDataSchema()
         f2s_schema = FileToSiteSchema()
-
+        
         requested_sites_to_deploy = []
         for site in sites:
             site_data = SiteData.query.filter_by(sitename=site).first()
@@ -181,7 +182,7 @@ class FilesManager:
                     new_f2s_data = f2s_schema.load(f2s_data)
                     db.session.add(new_f2s_data)
                     db.session.commit()
-
+                    
                     # Create a ticket if file correctly uploaded
                     if site in site_managers.keys() and len(site_managers[site]) > 0:
                         bz_trusted_url = "{}{}".format(current_app.config['BZ_SERVICE_URL'], "portal/tsb/tickets/trusted")
@@ -198,6 +199,7 @@ class FilesManager:
 
                         if bz_ticket_reply.status_code != requests.codes.ok:
                             print("[ERROR] Cannot create a ticket when uploading VNF")
+
                     else:
                         print("[ERROR] Cannot create ticket, no site managers available for that site")
 
