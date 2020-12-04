@@ -27,6 +27,7 @@ CREATE TABLE filetosite (
     _id 			    uuid DEFAULT uuid_generate_v4 (),
     file_id             uuid NOT NULL,
     site_id             uuid NOT NULL,
-    _status         VARCHAR NOT NULL,
+    _status             VARCHAR NOT NULL,
+    ticket_id           INTEGER,
     PRIMARY KEY(_id)
 );

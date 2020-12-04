@@ -9,12 +9,14 @@ class FileToSiteData(db.Model):
     file_id = db.Column(UUID(as_uuid=True), nullable=False)
     site_id = db.Column(UUID(as_uuid=True), nullable=False)
     _status = db.Column(db.String(2048), nullable=False)
+    ticket_id = db.Column(db.Integer, nullable=True)
 
 
 class FileToSiteSchema(ma.ModelSchema):
     file_id = fields.UUID(required=True)
     site_id = fields.UUID(required=True)
     _status = fields.Str(required=True)
+    ticket_id = fields.Int(required=False)
 
     class Meta:
         model = FileToSiteData
